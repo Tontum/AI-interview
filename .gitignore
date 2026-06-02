@@ -13,7 +13,7 @@ test-output.txt
 qodana.yaml
 
 app/src/main/resources/application-dev.yml
-/docs
+/docs/superpowers
 SETUP_API_KEYS.md
 
 # AI Assistant documentation
