@@ -4,6 +4,7 @@ import interview.guide.common.constant.CommonConstants.InterviewDefaults;
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
 import interview.guide.common.model.AsyncTaskStatus;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.modules.interview.model.HistoricalQuestion;
 import interview.guide.modules.interview.model.InterviewAnswerEntity;
 import interview.guide.modules.interview.model.InterviewQuestionDTO;
@@ -39,6 +40,7 @@ public class InterviewPersistenceService {
     private final InterviewAnswerRepository answerRepository;
     private final ResumeRepository resumeRepository;
     private final ObjectMapper objectMapper;
+    private final CurrentUserProvider currentUserProvider;
     
     /**
      * 保存新的面试会话（支持可选简历）
@@ -52,6 +54,7 @@ public class InterviewPersistenceService {
                                               String difficulty) {
         try {
             InterviewSessionEntity session = new InterviewSessionEntity();
+            session.setUserId(currentUserProvider.requireCurrentUserId());
             session.setSessionId(sessionId);
             session.setTotalQuestions(totalQuestions);
             session.setCurrentQuestionIndex(0);
@@ -261,7 +264,8 @@ public class InterviewPersistenceService {
      * 获取所有面试记录（按创建时间倒序）
      */
     public List<InterviewSessionEntity> findAll() {
-        return sessionRepository.findAllByOrderByCreatedAtDesc();
+        Long userId = currentUserProvider.requireCurrentUserId();
+        return sessionRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }
     
     /**

@@ -2,6 +2,7 @@ package interview.guide.modules.knowledgebase.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.infrastructure.mapper.KnowledgeBaseMapper;
 import interview.guide.infrastructure.mapper.RagChatMapper;
 import interview.guide.modules.knowledgebase.model.KnowledgeBaseEntity;
@@ -44,6 +45,7 @@ public class RagChatSessionService {
     private final RagChatMapper ragChatMapper;
     private final KnowledgeBaseMapper knowledgeBaseMapper;
     private final KnowledgeBaseQueryProperties queryProperties;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 创建新会话
@@ -60,6 +62,7 @@ public class RagChatSessionService {
 
         // 创建会话
         RagChatSessionEntity session = new RagChatSessionEntity();
+        session.setUserId(currentUserProvider.requireCurrentUserId());
         session.setTitle(request.title() != null && !request.title().isBlank()
             ? request.title()
             : generateTitle(knowledgeBases));
@@ -76,7 +79,8 @@ public class RagChatSessionService {
      * 获取会话列表
      */
     public List<SessionListItemDTO> listSessions() {
-        return sessionRepository.findAllOrderByPinnedAndUpdatedAtDesc()
+        Long userId = currentUserProvider.requireCurrentUserId();
+        return sessionRepository.findAllByUserIdOrderByUpdatedAtDesc(userId)
             .stream()
             .map(ragChatMapper::toSessionListItemDTO)
             .toList();

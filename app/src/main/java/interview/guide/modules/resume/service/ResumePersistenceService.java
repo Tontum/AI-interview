@@ -2,6 +2,7 @@ package interview.guide.modules.resume.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.infrastructure.file.FileHashService;
 import interview.guide.infrastructure.mapper.ResumeMapper;
 import interview.guide.modules.interview.model.ResumeAnalysisResponse;
@@ -35,6 +36,7 @@ public class ResumePersistenceService {
     private final ObjectMapper objectMapper;
     private final ResumeMapper resumeMapper;
     private final FileHashService fileHashService;
+    private final CurrentUserProvider currentUserProvider;
     
     /**
      * 检查简历是否已存在（基于文件内容hash）
@@ -45,10 +47,11 @@ public class ResumePersistenceService {
     public Optional<ResumeEntity> findExistingResume(MultipartFile file) {
         try {
             String fileHash = fileHashService.calculateHash(file);
-            Optional<ResumeEntity> existing = resumeRepository.findByFileHash(fileHash);
+            Long userId = currentUserProvider.requireCurrentUserId();
+            Optional<ResumeEntity> existing = resumeRepository.findByFileHashAndUserId(fileHash, userId);
             
             if (existing.isPresent()) {
-                log.info("检测到重复简历: hash={}", fileHash);
+                log.info("检测到重复简历: hash={}, userId={}", fileHash, userId);
                 ResumeEntity resume = existing.get();
                 resume.incrementAccessCount();
                 resumeRepository.save(resume);
@@ -69,8 +72,10 @@ public class ResumePersistenceService {
                                    String storageKey, String storageUrl) {
         try {
             String fileHash = fileHashService.calculateHash(file);
+            Long userId = currentUserProvider.requireCurrentUserId();
             
             ResumeEntity resume = new ResumeEntity();
+            resume.setUserId(userId);
             resume.setFileHash(fileHash);
             resume.setOriginalFilename(file.getOriginalFilename());
             resume.setFileSize(file.getSize());
@@ -132,7 +137,8 @@ public class ResumePersistenceService {
      * 获取所有简历列表
      */
     public List<ResumeEntity> findAllResumes() {
-        return resumeRepository.findAll();
+        Long userId = currentUserProvider.requireCurrentUserId();
+        return resumeRepository.findAllByUserIdOrderByUploadedAtDesc(userId);
     }
     
     /**
@@ -177,6 +183,10 @@ public class ResumePersistenceService {
      * 根据ID获取简历
      */
     public Optional<ResumeEntity> findById(Long id) {
+        Long userId = currentUserProvider.getCurrentUserId();
+        if (userId != null) {
+            return resumeRepository.findByIdAndUserId(id, userId);
+        }
         return resumeRepository.findById(id);
     }
     

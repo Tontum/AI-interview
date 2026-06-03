@@ -2,6 +2,7 @@ package interview.guide.modules.knowledgebase.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.infrastructure.file.FileHashService;
 import interview.guide.infrastructure.file.FileStorageService;
 import interview.guide.infrastructure.file.FileValidationService;
@@ -34,6 +35,7 @@ public class KnowledgeBaseUploadService {
     private final FileValidationService fileValidationService;
     private final FileHashService fileHashService;
     private final VectorizeStreamProducer vectorizeStreamProducer;
+    private final CurrentUserProvider currentUserProvider;
 
     private static final long MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
     
@@ -56,11 +58,12 @@ public class KnowledgeBaseUploadService {
         String contentType = parseService.detectContentType(file);
         validateContentType(contentType, fileName);
 
-        // 3. 检查知识库是否已存在（去重）
+        // 3. 检查知识库是否已存在（去重：同一用户内去重）
         String fileHash = fileHashService.calculateHash(file);
-        Optional<KnowledgeBaseEntity> existingKb = knowledgeBaseRepository.findByFileHash(fileHash);
+        Long userId = currentUserProvider.requireCurrentUserId();
+        Optional<KnowledgeBaseEntity> existingKb = knowledgeBaseRepository.findByFileHashAndUserId(fileHash, userId);
         if (existingKb.isPresent()) {
-            log.info("检测到重复知识库: hash={}", fileHash);
+            log.info("检测到重复知识库: hash={}, userId={}", fileHash, userId);
             return persistenceService.handleDuplicateKnowledgeBase(existingKb.get(), fileHash);
         }
 

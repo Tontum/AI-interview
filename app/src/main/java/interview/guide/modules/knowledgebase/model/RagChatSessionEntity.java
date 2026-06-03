@@ -28,6 +28,9 @@ public class RagChatSessionEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     /**
      * 会话标题（可自动生成或用户自定义）
      */

@@ -2,6 +2,7 @@ package interview.guide.modules.interviewschedule.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.modules.interviewschedule.model.CreateInterviewRequest;
 import interview.guide.modules.interviewschedule.model.InterviewScheduleDTO;
 import interview.guide.modules.interviewschedule.model.InterviewScheduleEntity;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class InterviewScheduleService {
 
     private final InterviewScheduleRepository repository;
+    private final CurrentUserProvider currentUserProvider;
 
     private static final String[] COPYABLE_FIELDS = {
         "companyName", "position", "interviewTime", "interviewType",
@@ -30,6 +32,7 @@ public class InterviewScheduleService {
     @Transactional
     public InterviewScheduleDTO create(CreateInterviewRequest request) {
         InterviewScheduleEntity entity = new InterviewScheduleEntity();
+        entity.setUserId(currentUserProvider.requireCurrentUserId());
         BeanUtils.copyProperties(request, entity);
         entity.setStatus(InterviewStatus.PENDING);
 
@@ -63,7 +66,8 @@ public class InterviewScheduleService {
         } else if (status != null) {
             entities = repository.findByStatus(InterviewStatus.valueOf(status));
         } else {
-            entities = repository.findAll();
+            Long userId = currentUserProvider.requireCurrentUserId();
+            entities = repository.findAllByUserIdOrderByInterviewTimeDesc(userId);
         }
 
         return entities.stream()

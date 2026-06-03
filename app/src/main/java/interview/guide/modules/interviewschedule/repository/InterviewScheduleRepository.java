@@ -25,4 +25,6 @@ public interface InterviewScheduleRepository extends JpaRepository<InterviewSche
         @Param("newStatus") InterviewStatus newStatus,
         @Param("oldStatus") InterviewStatus oldStatus,
         @Param("cutoff") LocalDateTime cutoff);
+
+    List<InterviewScheduleEntity> findAllByUserIdOrderByInterviewTimeDesc(Long userId);
 }

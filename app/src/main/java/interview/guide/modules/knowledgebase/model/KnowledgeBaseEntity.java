@@ -18,6 +18,9 @@ public class KnowledgeBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     // 文件内容的SHA-256哈希值，用于去重
     @Column(nullable = false, unique = true, length = 64)
     private String fileHash;
@@ -87,6 +90,14 @@ public class KnowledgeBaseEntity {
     
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
     
     public String getFileHash() {

@@ -2,6 +2,7 @@ package interview.guide.modules.knowledgebase.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.infrastructure.file.FileStorageService;
 import interview.guide.infrastructure.mapper.KnowledgeBaseMapper;
 import interview.guide.modules.knowledgebase.model.KnowledgeBaseEntity;
@@ -32,6 +33,7 @@ public class KnowledgeBaseListService {
     private final RagChatMessageRepository ragChatMessageRepository;
     private final KnowledgeBaseMapper knowledgeBaseMapper;
     private final FileStorageService fileStorageService;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 获取知识库列表（支持状态过滤和排序）
@@ -45,10 +47,11 @@ public class KnowledgeBaseListService {
         
         // 如果指定了状态，按状态过滤
         if (vectorStatus != null) {
-            entities = knowledgeBaseRepository.findByVectorStatusOrderByUploadedAtDesc(vectorStatus);
+            Long userId = currentUserProvider.requireCurrentUserId();
+            entities = knowledgeBaseRepository.findByUserIdAndVectorStatusOrderByUploadedAtDesc(userId, vectorStatus);
         } else {
-            // 否则获取所有知识库
-            entities = knowledgeBaseRepository.findAllByOrderByUploadedAtDesc();
+            Long userId = currentUserProvider.requireCurrentUserId();
+            entities = knowledgeBaseRepository.findAllByUserIdOrderByUploadedAtDesc(userId);
         }
         
         // 如果指定了排序字段，在内存中排序

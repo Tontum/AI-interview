@@ -1,7 +1,5 @@
 import { request, getErrorMessage } from './request';
 
-const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:8080';
-
 // ========== 类型定义 ==========
 
 export interface RagChatSession {
@@ -117,10 +115,11 @@ export const ragChatApi = {
   ): Promise<void> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/rag-chat/sessions/${sessionId}/messages/stream`,
+        `/api/rag-chat/sessions/${sessionId}/messages/stream`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({ question }),
         }
       );

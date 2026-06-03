@@ -22,14 +22,10 @@ public interface KnowledgeBaseRepository extends JpaRepository<KnowledgeBaseEnti
      */
     Optional<KnowledgeBaseEntity> findByFileHash(String fileHash);
 
-    /**
-     * 检查文件哈希是否存在
-     */
     boolean existsByFileHash(String fileHash);
 
-    /**
-     * 按上传时间倒序查找所有知识库
-     */
+    Optional<KnowledgeBaseEntity> findByFileHashAndUserId(String fileHash, Long userId);
+
     List<KnowledgeBaseEntity> findAllByOrderByUploadedAtDesc();
 
     /**
@@ -103,5 +99,9 @@ public interface KnowledgeBaseRepository extends JpaRepository<KnowledgeBaseEnti
      * 按向量化状态查找知识库（按上传时间倒序）
      */
     List<KnowledgeBaseEntity> findByVectorStatusOrderByUploadedAtDesc(VectorStatus vectorStatus);
+
+    List<KnowledgeBaseEntity> findByUserIdAndVectorStatusOrderByUploadedAtDesc(Long userId, VectorStatus vectorStatus);
+
+    List<KnowledgeBaseEntity> findAllByUserIdOrderByUploadedAtDesc(Long userId);
 }
 

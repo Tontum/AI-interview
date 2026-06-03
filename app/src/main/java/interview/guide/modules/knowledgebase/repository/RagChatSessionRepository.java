@@ -50,4 +50,6 @@ public interface RagChatSessionRepository extends JpaRepository<RagChatSessionEn
      */
     @Query("SELECT s FROM RagChatSessionEntity s LEFT JOIN FETCH s.knowledgeBases WHERE s.id = :id")
     Optional<RagChatSessionEntity> findByIdWithKnowledgeBases(@Param("id") Long id);
+
+    List<RagChatSessionEntity> findAllByUserIdOrderByUpdatedAtDesc(Long userId);
 }

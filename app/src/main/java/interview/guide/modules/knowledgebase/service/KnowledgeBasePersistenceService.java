@@ -2,6 +2,7 @@ package interview.guide.modules.knowledgebase.service;
 
 import interview.guide.common.exception.BusinessException;
 import interview.guide.common.exception.ErrorCode;
+import interview.guide.common.util.CurrentUserProvider;
 import interview.guide.modules.knowledgebase.model.KnowledgeBaseEntity;
 import interview.guide.modules.knowledgebase.model.VectorStatus;
 import interview.guide.modules.knowledgebase.repository.KnowledgeBaseRepository;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class KnowledgeBasePersistenceService {
 
     private final KnowledgeBaseRepository knowledgeBaseRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * 处理重复知识库（更新访问计数）
@@ -59,6 +61,7 @@ public class KnowledgeBasePersistenceService {
                                                   String storageKey, String storageUrl, String fileHash) {
         try {
             KnowledgeBaseEntity kb = new KnowledgeBaseEntity();
+            kb.setUserId(currentUserProvider.requireCurrentUserId());
             kb.setFileHash(fileHash);
             kb.setName(name != null && !name.trim().isEmpty() ? name : extractNameFromFilename(file.getOriginalFilename()));
             kb.setCategory(category != null && !category.trim().isEmpty() ? category.trim() : null);
